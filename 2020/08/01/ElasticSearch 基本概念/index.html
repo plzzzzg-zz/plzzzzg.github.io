@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Near Realtime (NRT)  近实时​ES是一个近实时的搜索平台。文档从被索引到可以被查询会有轻微的延迟（大约1秒） Cluster  集群一个集群是共同保存数据并提供联合索引、查询功能的一个或多个服务器（节点）。集群有一个唯一的名称，默认为 elasticsearch ，节点根据该名称加入集群。 Node 节点节点是集群中的单个服务器，参与保存数据、索引和查询。节点启动时有一个唯一的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ElasticSearch 基本概念">
+<meta property="og:url" content="http://yoursite.com/2020/08/01/ElasticSearch%20%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/index.html">
+<meta property="og:site_name" content="烂笔头">
+<meta property="og:description" content="Near Realtime (NRT)  近实时​ES是一个近实时的搜索平台。文档从被索引到可以被查询会有轻微的延迟（大约1秒） Cluster  集群一个集群是共同保存数据并提供联合索引、查询功能的一个或多个服务器（节点）。集群有一个唯一的名称，默认为 elasticsearch ，节点根据该名称加入集群。 Node 节点节点是集群中的单个服务器，参与保存数据、索引和查询。节点启动时有一个唯一的">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-01T07:53:59.957Z">
+<meta property="article:modified_time" content="2020-08-01T07:53:59.957Z">
+<meta property="article:author" content="guopeilun">
+<meta property="article:tag" content="elasticsearch">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/08/01/ElasticSearch%20%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ElasticSearch 基本概念 | 烂笔头</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">烂笔头</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">都记下来</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/01/ElasticSearch%20%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="guopeilun">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="烂笔头">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ElasticSearch 基本概念
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-01 15:53:59" itemprop="dateCreated datePublished" datetime="2020-08-01T15:53:59+08:00">2020-08-01</time>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h4 id="Near-Realtime-NRT-近实时"><a href="#Near-Realtime-NRT-近实时" class="headerlink" title="Near Realtime (NRT)  近实时"></a>Near Realtime (NRT)  近实时</h4><p>​ES是一个近实时的搜索平台。文档从被索引到可以被查询会有轻微的延迟（大约1秒）</p>
+<h4 id="Cluster-集群"><a href="#Cluster-集群" class="headerlink" title="Cluster  集群"></a>Cluster  集群</h4><p>一个集群是共同保存数据并提供联合索引、查询功能的一个或多个服务器（节点）。集群有一个唯一的名称，默认为 <em>elasticsearch</em> ，节点根据该名称加入集群。</p>
+<h4 id="Node-节点"><a href="#Node-节点" class="headerlink" title="Node 节点"></a>Node 节点</h4><p>节点是集群中的单个服务器，参与保存数据、索引和查询。节点启动时有一个唯一的名称，默认为 <em>UUID</em> 。节点默认加入的集群是<em>elasticsearch</em>。</p>
+<h4 id="Index-索引"><a href="#Index-索引" class="headerlink" title="Index 索引"></a>Index 索引</h4><p>索引是一批有着共性特征的文档的集合。每个索引都有个名字，且<strong>必须全小写</strong>。</p>
+<h4 id="Type-类型"><a href="#Type-类型" class="headerlink" title="Type 类型"></a>Type 类型</h4><blockquote>
+<p>​在新版本中被去除</p>
+</blockquote>
+<p>​类型是索引的一个逻辑分区，用于区分同一个索引下不同类型的文档。</p>
+<h4 id="Document-文档"><a href="#Document-文档" class="headerlink" title="Document 文档"></a>Document 文档</h4><p>​一个文档是信息被索引的基本单位。一个文档物理上属于一个索引，也属于索引内的一个类型。</p>
+<h4 id="分区和副本"><a href="#分区和副本" class="headerlink" title="分区和副本"></a>分区和副本</h4><p>​一个索引其实可以存储多到超过单个节点物理限制的数据。</p>
+<p>​例如一个索引由10亿数据，占用约1TB的磁盘空间，单节点的容量可能没那么大，也可能导致查询速度变慢。</p>
+<p>​问了解决这个问题，ElasticSearch提供了将索引分割成多个片的能力，称之为<code>Shards(分片)</code> 。创建索引的时候可以指定分片的数量。每个分片都能独立且具备全功能地部署在集群中的任意一个节点中。</p>
+<p><code>分片</code>重要的两个主要原因：</p>
+<ul>
+<li>可以水平数据容量</li>
+<li>可以分布式且并行操作来提供吞吐量</li>
+</ul>
+<p>​一个分片如何实现分布式的、其文档是如何汇合起来提供查询服务的机制完全有 ElasticSearch 管理，对用户是透明的。</p>
+<p>​ 在网络环境中请求失败是随时可能发生的事情，一个<strong>故障转移</strong>的机制能很好地应对一个分片\节点因为某些原因掉线或消失的情况。为此，ElasticSearch 允许为索引的分片创建一个或多个副本，即<code>副本分片</code>,建成<code>副本</code>。</p>
+<p><code>副本</code>重要的两个主要原因：</p>
+<ul>
+<li>在某个节点、分片宕机时提供高可用的能力。因此副本不会和原分片分配到同一个节点。</li>
+<li>因为请求能再各个分片并行处理，所以能提高搜索的吞吐量</li>
+</ul>
+<h5 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h5><p>​每个索引都能分割成多个分片。一个索引也可以被复制0或多次。索引一单被复制，就会有主分片和副本分片。</p>
+<p>​分片和副本的数量可以在创建索引的时候指定。索引创建之后也可以随时修改副本数量。可以通过<code>_shrink</code>和<code>_split</code> API修改现有索引的分片数量，这不是一个小动作，所以最好在创建索引前规划好分片数量。</p>
+<blockquote>
+<p>默认情况下，每个索引会分配5个主分片，和一个副本。也就是说集群中至少要有两个节点，一个索引有5个主分片和五个副本分片，每个索引总共10分片</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/elasticsearch/" rel="tag"># elasticsearch</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/01/JVM%E7%AC%94%E8%AE%B0/" rel="prev" title="JVM 笔记">
+      <i class="fa fa-chevron-left"></i> JVM 笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/08/04/ElasticSearch%20+%20Kibana%20%E5%AE%89%E8%A3%85/" rel="next" title="ElasticSearch + Kibana 安装">
+      ElasticSearch + Kibana 安装 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Near-Realtime-NRT-近实时"><span class="nav-number">1.</span> <span class="nav-text">Near Realtime (NRT)  近实时</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Cluster-集群"><span class="nav-number">2.</span> <span class="nav-text">Cluster  集群</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Node-节点"><span class="nav-number">3.</span> <span class="nav-text">Node 节点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Index-索引"><span class="nav-number">4.</span> <span class="nav-text">Index 索引</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Type-类型"><span class="nav-number">5.</span> <span class="nav-text">Type 类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Document-文档"><span class="nav-number">6.</span> <span class="nav-text">Document 文档</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分区和副本"><span class="nav-number">7.</span> <span class="nav-text">分区和副本</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#总结"><span class="nav-number">7.1.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">guopeilun</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">guopeilun</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
